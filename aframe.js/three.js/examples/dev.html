@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<meta name='viewport' content='width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0'>
+<!-- 性能显示 -->
+<script src='vendor/three.js/examples/js/libs/stats.min.js'></script>
+<!-- three.js library -->
+<script src='vendor/three.js/build/three.js'></script>
+<!-- jsartookit -->
+<script src='../vendor/jsartoolkit5/build/artoolkit.min.js'></script>
+<script src='../vendor/jsartoolkit5/js/artoolkit.api.js'></script>
+<!-- include threex.artoolkit -->
+<script src='../src/threex/threex-artoolkitsource.js'></script>
+<script src='../src/threex/threex-artoolkitcontext.js'></script>
+<script src='../src/threex/threex-artoolkitprofile.js'></script>
+<script src='../src/threex/threex-arbasecontrols.js'></script>
+<script src='../src/threex/threex-armarkercontrols.js'></script>
+<script src='../src/threex/threex-arsmoothedcontrols.js'></script>
+<!-- <script>THREEx.ArToolkitContext.baseURL = '../'</script> -->
+
+
+<script src="js/adapter-latest.js"></script>
+<!-- <script src="js/main.js"></script> -->
+<script src="js/lib/ga.js"></script>
+
+<body style='margin : 0px; overflow: hidden; font-family: Monospace;'>
+    <button id="showVideo" style="position: fixed; top: 0px; right: 0px; cursor: pointer; opacity: 0.9; z-index: 10001;">Open camera</button>
+    <div id="errorMsg" style="position: fixed; bottom: 0px; left: 0px; cursor: pointer; opacity: 0.9; z-index: 10001;"></div>
+	
+	<video id="gum-local" style="height: 480px;display:inline;" autoplay playsinline ></video>
+	<script src="js/dev.js"></script>
+	<script>
+		var msg2= '[0]';
+		// Put variables in global scope to make them available to the browser console.
+		const constraints = window.constraints = {
+		  audio: false,
+		  video: { facingMode: "environment" }
+		};
+		
+		function handleSuccess(stream) {
+		  // const video = document.querySelector('video');
+		  // const videoTracks = stream.getVideoTracks();
+		  // errorMsg('Got stream with constraints:', constraints);
+		  // console.log('Got stream with constraints:', constraints);
+		  // console.log(`Using video device: ${videoTracks[0].label}`);
+		  // window.stream = stream; // make variable available to browser console
+		  // video.srcObject = stream;
+		  
+		  
+		  ProgramStart.Main(stream);
+		}
+		
+		function handleError(error) {
+		  if (error.name === 'ConstraintNotSatisfiedError') {
+		    const v = constraints.video;
+		    errorMsg(`The resolution ${v.width.exact}x${v.height.exact} px is not supported by your device.`);
+		  } 
+		  else if (error.name === 'PermissionDeniedError') {
+		    errorMsg('Permissions have not been granted to use your camera and ' +
+		      'microphone, you need to allow the page access to your devices in ' +
+		      'order for the demo to work.');
+		  }
+		  
+		  let msg = error.toString();
+		  errorMsg(`getUserMedia error: ${error.name} ${msg} ${msg2}`, error);
+		}
+		
+		function errorMsg(msg, error) {
+		  const errorElement = document.querySelector('#errorMsg');
+		  errorElement.innerHTML += `<p>${msg}</p>`;
+		  if (typeof error !== 'undefined') {
+		    console.error(error);
+		  }
+		}
+		async function init(e) {
+		  try {
+			if(navigator.mediaDevices !== null){
+				errorMsg('navigator.mediaDevices',null);
+				const stream = await navigator.mediaDevices.getUserMedia(constraints);
+				handleSuccess(stream);
+			}
+			else if(navigator.webkitGetUserMedia !== null){
+				errorMsg('navigator.webkitGetUserMedia',null);
+				const stream = await navigator.webkitGetUserMedia(constraints);
+				handleSuccess(stream);
+			}
+			else if(navigator.mozGetUserMedia !== null){
+				errorMsg('navigator.mozGetUserMedia',null);
+				const stream = await navigator.mozGetUserMedia(constraints);
+				handleSuccess(stream);
+			}
+			else if(navigator.getUserMedia !== null){
+				errorMsg('navigator.getUserMedia',null);
+				const stream = await navigator.getUserMedia(constraints);
+				handleSuccess(stream);
+			}
+			
+		    
+		    // e.target.disabled = true;
+		  } 
+		  catch (e) {
+		    handleError(e);
+		  }
+		}
+		document.querySelector('#showVideo').addEventListener('click', e => init(e));
+	</script>
+</body>
